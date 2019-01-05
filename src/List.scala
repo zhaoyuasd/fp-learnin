@@ -3,7 +3,7 @@ case object Nil extends  List[Nothing]
 case class Cons[+A](head:A,tail:List[A]) extends  List[A]
 object List {
 
-  def apply[A](as: A*): List[A] = {
+  def apply[A](as: A*): List[A] = { // 注意 这里 A*其实是一个Seq对象 seq包含一个 head 和tail对象 这里是scala语法糖
     if (as.isEmpty) Nil
     else Cons(as.head, apply(as.tail: _*))
   }
@@ -80,9 +80,16 @@ object List {
   //使用右折叠计算链表长度
   def length[A](l: List[A]): Int = l match {
     case Nil => 0
-    case Cons(_, t) => foldRight(t, 1)((_, y) => y + 1) //参数对应 这里的下划线对应 t中的某一个元素  y对应1  这里的1是起始数据 后面会跟这进行变化
+    case Cons(_, t) => foldRight(t, 1)((_, y) => y + 1)
+    //参数对应 这里的下划线对应 t中的某一个元素  y对应1  这里的1是起始数据 后面会跟这进行变化
 
   }
+  def length2[A](l: List[A]): Int =foldRight(l,0)((_,y)=>1+y)
+  def length3[A](l: List[A]): Int =foldRight(l,0)((_,y)=>1+0)
+  //这个方法 直接返回 因为在运行第一次后 可以直接进行f函数的表达式的运算 1+0  运算式里没有需要继续解决的 表达式 所以直接返回结果
+  //因而不会进行后续的迭代 f(t, foldRight(h, z)(f)) 到第一步 就直接返回1+0了 没有后续的运算  进行递归的话 需要运算的表达式中还需要有
+  //待处理的 运算式 而不是参数
+
 
   //左折叠 从最左端开始真正的计算
   def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = as match {
@@ -197,13 +204,13 @@ def map[A,B](as:List[A])(f:A=>B):List[B]= {
 
 
   def main(args: Array[String]): Unit = {
-    val x=List(1,2,5,3,4,5)
+    /*val x=List(1,2,5,3,4,5)
     val m=x match{
       case Cons(x,Cons(2,Cons(4,_)))=>x
       case Nil=>42
       case Cons(x,Cons(y,Cons(3,Cons(4,_))))=>x+y
       case Cons(h,t)=>h+sum(t)
-      case _ =>101}
+      case _ =>101}*/
 
     //println(m)
     //println(delFist(x))
@@ -217,7 +224,8 @@ def map[A,B](as:List[A])(f:A=>B):List[B]= {
 
     //println(increaseByOne(List(1,2,3)))
     //println(filterMap(List(1,2,3))(i=>List(i,i)))
-
-    println(zip(List(1,2,3) ,List(4,5,6)))
+    println(length(List(1,2,3)))
+    println(length2(List(1,2,3)))
+    //println(zip(List(1,2,3) ,List(4,5,6)))
   }
   }

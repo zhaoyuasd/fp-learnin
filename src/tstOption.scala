@@ -71,7 +71,7 @@ package com.laozhao {
     import scala.util.control.Breaks._
 
     val els:List[Employee]=List(Employee("zhao","hhh"),Employee("zhao2","hhh2"))
-    def looupByName(name:String):Option[Employee]={
+    /*def looupByName(name:String):Option[Employee]={
       var res :Option[Employee]=None
       for (i <- 0 to List.length(els)){
         breakable{
@@ -83,9 +83,9 @@ package com.laozhao {
       }
       res
     }
-
+*/
     def main(args: Array[String]): Unit = {
-      println(looupByName("zhao").map(_.departMent))
+     // println(looupByName("zhao").map(_.departMent))
     }
   }
 
