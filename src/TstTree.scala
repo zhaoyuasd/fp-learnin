@@ -13,15 +13,23 @@ object TstTree {
 
   //求最大深度
  def maxDepth[A] (tree:Tree[A]):Int=tree match {
-   case Branch(l,r)=>{
-        l match {
-          case Branch(_,_)=>1+maxDepth(l)
-        }
-       r match {
-         case Branch(_,_)=>1+maxDepth(l)
-       }
-   }
+   case Branch(l,r)=>(1+maxDepth(l)).max(1+maxDepth(r))
    case Leaf(_)=>1
    case _ =>0
  }
+
+  // 求最大值 尾递归
+  def  maxium(tree:Tree[Int]):Int= 
+    tree match {
+      case Branch(l,r)=> maxium(l).max(maxium(r))
+      case Leaf(value)=> value
+    }
+
+
+  // 值转换 尾递归
+  def map[A,B](tree:Tree[A],f:A=>B):Tree[B]=
+    tree match {
+         case Leaf(a:A) =>Leaf(f(a))
+         case Branch(left:Tree[A],right:Tree[A])=>Branch(map(left,f),map(right,f))
+    }
 }

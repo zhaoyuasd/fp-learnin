@@ -138,13 +138,12 @@ object List {
   }
 
   //数据类型泛化  例如 List[Int]=>List[String]
-def map[A,B](as:List[A])(f:A=>B):List[B]= {
-  val res:List[B]=Nil
+def map[A,B](as:List[A])(f:A=>B):List[B]=
   as match {
     case Nil => Nil: List[B]
-    case Cons(_,_)=>foldRight(as,res)((x,y)=>Cons(f(x),y))
+    case Cons(_,_)=>foldRight(as,Nil:List[B])((x,y)=>Cons(f(x),y))
   }
-}
+
 
   //数据过滤
   def  filter[A](as:List[A])(f:A=>Boolean):List[A]={
