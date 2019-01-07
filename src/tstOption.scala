@@ -6,72 +6,65 @@ import scala.util.hashing.Hashing.Default
 package com.laozhao {
 
  sealed trait Option[+A] {
-    def map[B](f: A => B): Option[B]
+    def map[B](f: A => B): Option[B] = this match
+    {
+      case Some(a:A)=> Some(f(a))
+      case _ =>  None
+    }
 
-    def flatMpa[B](f: A => Option[B]): Option[B]
+    def flatMpa[B](f: A => Option[B]): Option[B] =this match {
+      case Some(a:A)=>f(a)
+      case _ =>None
+    }
 
-    def getOrElse[B >: A](default: => B): B
-
-    def orElse[B >: A](ob: => Option[B]): Option[B]
-
-    def filter(f: A => Boolean): Option[A]
-  }
-
- case class Some[+A](get:A) extends Option[A] {
-   override def map[B](f: (A) => B): Option[B] = get match {
-     //case None=> None
-     case _ =>Some(f(get))
+    def getOrElse[B >: A](default: => B): B=
+   this match {
+     case Some(a:B)=>a
+     case _ =>default
    }
 
-   override def flatMpa[B](f: (A) => Option[B]): Option[B] = {
-     get match {
-     //  case None=> None
-       case _=> f(get)
-     }
-   }
+    def orElse[B >: A](ob: => Option[B]): Option[B]= this match {
+      case Some(a:B) =>Some(a)
+      case _ =>ob
+    }
 
-   override def getOrElse[B >: A](default: => B): B = {
-     get match {
-      // case None=> default
-       case _=> get
-     }
-   }
-
-   override def orElse[B >: A](ob: => Option[B]): Option[B] = {
-     get match {
-       //case None=> ob
-       case _=> Some(get)
-     }
-   }
-
-   override def filter(f: (A) => Boolean): Option[A] = {
-     get match {
-       //case None=> None
-       case _  => {
-         if (f(get) ) Some(get)
-         else None
+   def add[A](a:Option[A]):Option[List[A]]=this match {
+     case Some(a:List[A]) =>{
+       a match {
+         case None =>None
+         case Some(b:A)=>Some(Nil::a::b)
        }
      }
+     case None =>None
    }
- }
- case object None extends Option[Nothing] {
-   override def map[B](f: (Nothing) => B): Option[B] = None
+    def filter(f: A => Boolean): Option[A] =this match {
+      case Some(a:A)=> if(f(a))  Some(a) else None
+      case _ =>None
+    }
 
-   override def flatMpa[B](f: (Nothing) => Option[B]): Option[B] = None
+   def  sequence[A](a:List[Option[A]]):Option[List[A]]= a match {
+     case Nil =>None
 
-   override def getOrElse[B >: Nothing](default: => B): B = default
-
-   override def orElse[B >: Nothing](ob: => Option[B]): Option[B] = None
-
-   override def filter(f: (Nothing) => Boolean): Option[Nothing] = None
- }
+   }
+  }
+ case class Some[+A](get:A) extends Option[A]
+ case object None extends Option[Nothing]
 
   object tstOption {
-    case class Employee(name: String,departMent:String)
+   def avg(xs:Seq[Double]):Option[Double]={
+     case Nil=>None
+     Some(xs.sum/xs.length)
+   }
+
+   def variance (xs:Seq[Double]):Option[Double]={
+     avg(xs).flatMpa(m=>avg(xs.map(i=>math.pow(i-m,2))))
+   }
+
+    /*case class Employee(name: String,departMent:String)
     import scala.util.control.Breaks._
 
     val els:List[Employee]=List(Employee("zhao","hhh"),Employee("zhao2","hhh2"))
-    /*def looupByName(name:String):Option[Employee]={
+    def looupByName(name:String):Option[Employee]={
       var res :Option[Employee]=None
       for (i <- 0 to List.length(els)){
         breakable{

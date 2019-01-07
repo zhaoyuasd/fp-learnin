@@ -26,10 +26,10 @@ object TstTree {
     }
 
 
-  // 值转换 尾递归
-  def map[A,B](tree:Tree[A],f:A=>B):Tree[B]=
+  // 值转换 尾递归  柯里化 参数类型自动推导
+  def map[A,B](tree:Tree[A])(f:A=>B):Tree[B]=
     tree match {
          case Leaf(a:A) =>Leaf(f(a))
-         case Branch(left:Tree[A],right:Tree[A])=>Branch(map(left,f),map(right,f))
+         case Branch(left:Tree[A],right:Tree[A])=>Branch(map(left)(f),map(right)(f))
     }
 }
