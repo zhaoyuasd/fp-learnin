@@ -1,4 +1,3 @@
-import scala.util.hashing.Hashing.Default
 
 /**
   * Created by viruser on 2018/10/24.
@@ -6,26 +5,33 @@ import scala.util.hashing.Hashing.Default
 package com.laozhao {
 
  sealed trait Option[+A] {
+   //改变内部的值 函数只对内部的值进行改变生成的结果也只是的内部的值
     def map[B](f: A => B): Option[B] = this match
     {
       case Some(a:A)=> Some(f(a))
-      case _ =>  None
+      case None =>  None
     }
 
+   def map2[A,B,C](a:Option[A],b:Option[B])(f:(A,B)=>C):Option[C] =
+    // a.map(aa=>b.map(bb=>f(aa,bb)))
+     a.flatMpa(aa=>b.map(bb=>f(aa,bb)))
+
+
+   // 使用内部的值生成新的option 原来的都丢弃 只保留内部状态的值同时配合函数生成新的option
     def flatMpa[B](f: A => Option[B]): Option[B] =this match {
       case Some(a:A)=>f(a)
-      case _ =>None
+      case None =>None
     }
 
     def getOrElse[B >: A](default: => B): B=
    this match {
      case Some(a:B)=>a
-     case _ =>default
+     case None =>default
    }
 
     def orElse[B >: A](ob: => Option[B]): Option[B]= this match {
       case Some(a:B) =>Some(a)
-      case _ =>ob
+      case None =>ob
     }
 
    def add[A](a:Option[A]):Option[List[A]]=this match {
@@ -39,13 +45,20 @@ package com.laozhao {
    }
     def filter(f: A => Boolean): Option[A] =this match {
       case Some(a:A)=> if(f(a))  Some(a) else None
-      case _ =>None
+      case None =>None
     }
 
-   def  sequence[A](a:List[Option[A]]):Option[List[A]]= a match {
-     case Nil =>None
 
+   def  sequence[A](a:List[Option[A]]):Option[List[A]]= a match {
+     case Nil =>Some(Nil)
+     case head::tail => head.flatMpa(hh=>sequence(tail).map(hh::_))
    }
+
+   def traverse[A,B](a:List[A])(f:A=>Option[B]):Option[List[B]]=
+     a match {
+       case Nil=>Some(Nil)
+       case h::t =>f(h) .flatMpa(hh=>traverse(t)(f).map(hh::_))
+     }
   }
  case class Some[+A](get:A) extends Option[A]
  case object None extends Option[Nothing]
