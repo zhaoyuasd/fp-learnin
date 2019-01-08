@@ -34,7 +34,7 @@ sealed trait Option[+A] {
       case None =>ob
     }
 
-   def add[A](a:Option[A]):Option[List[A]]=this match {
+   /*def add[A](a:Option[A]):Option[List[A]]=this match {
      case Some(a:List[A]) =>{
        a match {
          case None =>None
@@ -42,7 +42,7 @@ sealed trait Option[+A] {
        }
      }
      case None =>None
-   }
+   }*/
     def filter(f: A => Boolean): Option[A] =this match {
       case Some(a:A)=> if(f(a))  Some(a) else None
       case None =>None
@@ -65,8 +65,7 @@ sealed trait Option[+A] {
 
   object tstOption {
    def avg(xs:Seq[Double]):Option[Double]={
-     case Nil=>None
-     Some(xs.sum/xs.length)
+     if(xs.isEmpty) None else  Some(xs.sum/xs.length)
    }
 
    def variance (xs:Seq[Double]):Option[Double]={

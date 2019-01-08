@@ -1,10 +1,6 @@
 package either
-
-
-
-
 sealed trait Either[+E,+A] {
- def map[B](f:A=>B):Either[E,B] ={
+ def map[B](f:A=>B):Either[E,B] = this match{
    case Left(e:E)=>Left(e)
    case  Right(a:A)=>{
      try Right(f(a))
