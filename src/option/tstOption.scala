@@ -2,9 +2,9 @@
 /**
   * Created by viruser on 2018/10/24.
   */
-package com.laozhao {
+package option
 
- sealed trait Option[+A] {
+sealed trait Option[+A] {
    //改变内部的值 函数只对内部的值进行改变生成的结果也只是的内部的值
     def map[B](f: A => B): Option[B] = this match
     {
@@ -94,5 +94,3 @@ package com.laozhao {
      // println(looupByName("zhao").map(_.departMent))
     }
   }
-
-}
