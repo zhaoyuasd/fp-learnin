@@ -57,6 +57,10 @@ package stream {
    //判断全部元素是否符合条件 如果有一个不符合立刻返回
     def forAll(f:A=>Boolean):Boolean=foldRight(true)((a,b)=>f(a)&&b)  // 如果f(a)为false 会立刻返回 不进行后续验证
 
+
+    //使用foldRight 实现takeWhile  if(f(a))  Cons(()=>a,()=>b)   这一步有点看不懂  但是结果是对的
+    def takeWhileFoldRignt(f:A=>Boolean):Stream[A]=
+      foldRight(Empty:Stream[A])((a:A,b)=> if(f(a))  Cons(()=>a,()=>b) else b.takeWhileFoldRignt(f))
     }
 
   case object Empty extends Stream[Nothing]
