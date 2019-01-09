@@ -62,6 +62,10 @@ package stream {
    //  case Cons(h,t)=>f(h(),t().foldRight(z)(f)) 可知 a->h(),  b->t().foldRight(z)(f)
     def takeWhileFoldRignt(f:A=>Boolean):Stream[A]=
       foldRight(Empty:Stream[A])((a,b)=> if(f(a))  Cons(()=>a,()=>b) else b)
+
+
+    def headOptionfoldRight:Option[A]=
+      foldRight(None:Option[A])((a,_)=>Some(a))
     }
 
   case object Empty extends Stream[Nothing]
