@@ -31,6 +31,31 @@ package stream {
     }
 
 
+    // 返回头部元素
+    def headOption:Option[A]=this match{
+      case Empty =>None
+      case Cons(h,_)=>Some(h())
+    }
+
+    // 监测是否存在某元素 如果存在立即返回
+    def exsist(f:A=>Boolean):Boolean= this match{
+      case Empty=> false
+      case Cons(h, t)=> f(h())||t().exsist(f)  //这里在验证true的时候 ||操作符是短路验证的 前面为true 后面就不进行验证了
+    }
+
+
+    // 右折叠  遍历元素 找到期望的结果后 立刻返回
+    // =>B 表示f的第二个参数是传名参数 f不会立刻对其进行求值 直到实际使用之前
+    def foldRight[B](z: =>B)(f:(A,=> B) =>B):B=this  match{
+      case Empty =>z
+      case Cons(h,t)=>f(h(),t().foldRight(z)(f))  //这里只要不对第二个参数进行求值 递归就不会发生
+    }
+
+    // 使用右折叠 实现exists方法  这个方法的后半段  foldRight(false)((a,b)=>f(a)||b) 有点看都不懂 无法理解
+    def existfoldRight(f:A=>Boolean):Boolean=foldRight(false)((a,b)=>f(a)||b)  //这里面 这个b是什么类型 如何确定的  如何确定的
+
+   //判断全部元素是否符合条件 如果有一个不符合立刻返回
+    def forAll(f:A=>Boolean):Boolean=foldRight(true)((a,b)=>f(a)&&b)  // 如果f(a)为false 会立刻返回 不进行后续验证
 
     }
 
