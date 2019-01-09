@@ -59,8 +59,9 @@ package stream {
 
 
     //使用foldRight 实现takeWhile  if(f(a))  Cons(()=>a,()=>b)   这一步有点看不懂  但是结果是对的
+   //  case Cons(h,t)=>f(h(),t().foldRight(z)(f)) 可知 a->h(),  b->t().foldRight(z)(f)
     def takeWhileFoldRignt(f:A=>Boolean):Stream[A]=
-      foldRight(Empty:Stream[A])((a:A,b)=> if(f(a))  Cons(()=>a,()=>b) else b.takeWhileFoldRignt(f))
+      foldRight(Empty:Stream[A])((a,b)=> if(f(a))  Cons(()=>a,()=>b) else b)
     }
 
   case object Empty extends Stream[Nothing]
