@@ -16,8 +16,20 @@ package stream {
           case Empty=>Empty
           case Cons(h,t)=>if(n>0) Cons(h,()=>t().take(n-1)) else Empty
         }
+    def flatMap[B](f:A=>Stream[B]):Stream[B]= this match {
+      case Empty=>Empty
+      case Cons(h, t)=>f(h()).append(t().flatMap(f))
+    }
 
-
+    def map[B](f:A=>B):Stream[B]=this match
+      {
+      case Empty=>Empty:Stream[B]
+      case Cons(h,t)=>Cons(()=>f(h()),()=>t().map(f))
+    }
+    def map2[B,C>:A](b:Stream[C])(f:(C,C)=>B):Stream[B]= this match {
+      case Empty=>Empty
+      case _=> this.flatMap(aa=>b.map(bb=>f(aa,bb)))
+    }
     // 删除前几个
       def drop(n:Int):Stream[A]= this match {  //这里如果方法为 drop[A] 就会报错  drop就运行
          case Empty =>Empty
@@ -66,7 +78,30 @@ package stream {
 
     def headOptionfoldRight:Option[A]=
       foldRight(None:Option[A])((a,_)=>Some(a))
-    }
+
+    def mapfoldright[B](f:A=>B):Stream[B]=
+      foldRight(Empty:Stream[B])((a,b)=>Cons(()=>f(a),()=>b))
+
+    def fliterFoldright(f:A=>Boolean):Stream[A]=
+      foldRight(Empty:Stream[A])((a,b)=>if(f(a))Cons(()=>a,()=>b) else  b)
+
+
+
+    def flatMapfoldright[B](f:A=>Stream[B]):Stream[B]=
+      foldRight(Empty:Stream[B])((a,b)=>f(a).append(b))
+
+    // 这里只能新增A的父类  新增A 如果写成[A] 会报错 Covariant type A occurs in contravariant position in type Stream[A] of value g
+    def  append[B>:A](g:Stream[B]) :Stream[B]=
+      this match {
+        case Cons(h, t)=>Cons(h,()=>t().append(g))
+        case _ =>g
+      }
+
+
+
+  }
+
+
 
   case object Empty extends Stream[Nothing]
   case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -82,7 +117,35 @@ package stream {
     def apply[A](as: A*): Stream[A] = {
       if (as.isEmpty) Empty else cons(as.head, apply(as.tail: _*))
     }
+
+    def constant[A](a:A):Stream[A]=
+    {
+      lazy val ones:Stream[A]=Stream.cons(a,ones)
+      ones
+    }
+
+    def from(a:Int):Stream[Int]=
+    {
+      //lazy val ones:Stream[Int]=Stream.cons(a,ones.map(_ + 1))
+      //ones
+      cons(a,from(a+1))
+    }
+
+    def map2[A,B](a:Stream[A],b:Stream[A])(f:(A,A)=>B):Stream[B]=
+      a.flatMap(aa=>b.map(bb=>f(aa,bb)))
+
+
+    // 这个 有点溜哦
+    def fibs:Stream[Int]={
+      def go(f0:Int,f1:Int):Stream[Int]=cons(f0,go(f1,f0+f1))
+      go(0,1)
+    }
+
+    def unfold[A,S](z:S)(f:S=>Option[(A,S)]):Stream[A]
+
   }
+
+
 
 }
 
