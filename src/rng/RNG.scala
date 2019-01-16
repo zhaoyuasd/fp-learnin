@@ -3,7 +3,44 @@ package rng
 
 trait RNG {
  def nextInt:(Int,RNG)  //返回值是一个tuple2
+   type Rand[+A] = RNG => (A, RNG) //组合子  rand是一个过程的别名 本身是一种 函数类型
+
+
+  def flatMap[A,B](f:Rand[A])(g:A=>Rand[B]):Rand[B]=rng=>{
+    val (a,rng1)=f(rng)
+    g(a)(rng1)
+   /* val (b,rng2)=g(a)(rng1)
+    (b,rng2)*/
+  }
+  def map[A, B](s: Rand[A])(f: A => B): Rand[B] = (rng: RNG) => {
+    val (a, rng2) = s(rng)
+    (f(a) -> rng2)
+  }
+
+  def mapf[A, B](s: Rand[A])(f: A => B): Rand[B]=flatMap(s)(a=>unit(f(a)))
+
+  //?
+  def map2[A, B, C](a: Rand[A], b: Rand[B])(f: (A, B) => C): Rand[C] = rng => {
+    val (av, ar) = a(rng)
+    val (bv, br) = b(ar)
+    (f(av, bv), br) //这里有两个RNG 看不懂
+  }
+
+  //这个也是看答案 答案都看半天  flatMap实现map2
+  def map2f[A, B, C](fa: Rand[A], fb: Rand[B])(f: (A, B) => C): Rand[C] =flatMap(fa)(a=>map(fb)(b=>f(a,b)))
+  def unit[A](a: A): Rand[A] = rng => (a, rng)
+
+  // 这个想到用map2了  没想到foldright
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+    fs.foldRight(unit(List[A]()))((f, ass) => map2(f, ass)(_ :: _))
+
+  def flatMap[A,B](f:Rand[A])(g:A=>Rand[B]):Rand[B]=rng=>{
+    val (a,rng1)=f(rng)
+    val (b,rng2)=g(a)(rng1)
+    (b,rng2)
+  }
 }
+
 
 case class SimpleRNG(seed:Long)extends RNG {
   override def nextInt: (Int, RNG) = {
@@ -37,32 +74,22 @@ case class SimpleRNG(seed:Long)extends RNG {
     mlist(count, rng, List(): List[Int])
   }
 
-  type Rand[+A] = RNG => (A, RNG) //组合子  rand是一个过程的别名 本身是一种 函数类型
-  def map[A, B](s: Rand[A])(f: A => B): Rand[B] = (rng: RNG) => {
-    val (a, rng2) = s(rng)
-    (f(a) -> rng2)
-  }
-
+  /*def flatMap[A,B](f:Rand[A])(g:A=>Rand[B]):Rand[B]=rng=>{
+    val (a,rng1)=f(rng)
+    val (b,rng2)=g(a)(rng1)
+    (b,rng2)
+  }*/
   def nonNegativeEven: Rand[Int] =
     map(nonNegativeInt)(i => i - i % 2)
 
-  //?
-  def map2[A, B, C](a: Rand[A], b: Rand[B])(f: (A, B) => C): Rand[C] = rng => {
-    val (av, ar) = a(rng)
-    val (bv, br) = b(ar)
-    (f(av, bv), br) //这里有两个RNG 看不懂
-  }
-    def unit[A](a: A): Rand[A] = rng => (a, rng)
+  //看答案做出来的
+    def nonNegativeLessThan(n:Int):Rand[Int]=flatMap(nonNegativeInt)(
+      i=> {
+        val mod:Int = i % n
+        if(i+(n-1)-mod>=0) unit(mod)
+        else nonNegativeLessThan(n)
+      })
 
-// 这个想到用map2了  没想到foldright
-    def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
-      fs.foldRight(unit(List[A]()))((f, ass) => map2(f, ass)(_ :: _))
-
-    def flatMap[A,B](f:Rand[A])(g:A=>Rand[B]):Rand[B]=rng=>{
-      val (a,rng1)=f(rng)
-      val (b,rng2)=g(a)(rng1)
-      (b,rng2)
-    }
 
 }
 
